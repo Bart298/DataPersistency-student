@@ -46,11 +46,14 @@
 -- code en begindatum.
 -- DROP VIEW IF EXISTS s2_3; CREATE OR REPLACE VIEW s2_3 AS                                                     -- [TEST]
 
+SELECT * from uitvoeringen WHERE locatie = 'UTRECHT' or locatie = 'MAASTRICHT'
 
 -- S2.4. Namen
 --
 -- Geef de naam en voorletters van alle medewerkers, behalve van R. Jansen.
--- DROP VIEW IF EXISTS s2_4; CREATE OR REPLACE VIEW s2_4 AS                                                     -- [TEST]
+-- DROP VIEW IF EXISTS s2_4; CREATE OR REPLACE VIEW s2_4 AS     
+SELECT naam,voorl from medewerkers WHERE NOT (naam = 'JANSEN' and voorl = 'R')                                                -- [TEST]
+
 
 
 -- S2.5. Nieuwe SQL-cursus
@@ -66,6 +69,9 @@ ON CONFLICT DO NOTHING;                                                         
 --
 -- Neem één van je collega-studenten aan als stagiair ('STAGIAIR') en
 -- voer zijn of haar gegevens in. Kies een personeelnummer boven de 8000.
+INSERT INTO medewerkers (mnr, naam, voorl, functie, chef, gbdatum, maandsal, comm, afd)
+VALUES (8001, 'VANDERWEES', 'N', 'STAGIAIR', 7698, '24-10-2006', 50, NULL, 20)
+
 INSERT
 ON CONFLICT DO NOTHING;                                                                                         -- [TEST]
 

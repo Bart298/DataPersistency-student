@@ -83,7 +83,7 @@ VALUES ('S02', '12-04-2019', 7902, 'DE MEERN'),
        ('JAV', '01-02-2020', 7876, 'DE MEERN'),
        ('PLS', '11-09-2020', 7788, 'DE MEERN'),
        ('XML', '18-09-2020', NULL, 'MAASTRICHT'),
-       ('OAG', '27-09-2020', 7902, 'DE MEERN');
+       ('OAG', '27-09-2020', 7902, 'DE MEERN');w
 
 -- Toekomstige uitvoeringen
 INSERT INTO uitvoeringen (cursus, begindatum, docent, locatie)
