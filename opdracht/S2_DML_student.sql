@@ -111,12 +111,17 @@ VALUES ('D&P', 'Data & Persistency', 'ALG', 6);
 
 INSERT INTO uitvoeringen (cursus, begindatum, docent, locatie)
 VALUES ('D&P', '12-04-2019', 7369, 'LEERDAM'),
-       ('D&P', '10-08-2019', 7369, 'LEERDAM');
+       ('D&P', '10-08-2019', 7369, 'LEERDAM'),
+       ('D&P', '11-09-2019', 7369, 'LEERDAM');
+
 
 INSERT INTO inschrijvingen (cursist, cursus, begindatum, evaluatie)
 VALUES (7499, 'D&P', '12-04-2019', 4),
        (7934, 'D&P', '12-04-2019', 5),
-       (7698, 'D&P', '12-04-2019', 4)
+       (7698, 'D&P', '10-08-2019', 4),
+       (7788, 'D&P', '10-08-2019', 2),
+       (7566, 'D&P', '11-09-2019', NULL),
+       (7876, 'D&P', '11-09-2019', NULL),
 
 INSERT
 ON CONFLICT DO NOTHING;                                                                                         -- [TEST]
