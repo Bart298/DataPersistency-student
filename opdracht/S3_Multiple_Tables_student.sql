@@ -103,3 +103,7 @@ UNION
 SELECT * FROM test_select('S3.6') AS resultaat
 ORDER BY resultaat;
 
+SELECT m.naam AS medewerker, round(AVG(s.toelage), -1) AS toelage
+FROM medewerkers m
+JOIN schalen s ON m.maandsal >= s.ondergrens AND m.maandsal <= s.bovengrens
+GROUP BY medewerker

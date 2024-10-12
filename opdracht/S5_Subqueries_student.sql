@@ -17,8 +17,7 @@
 -- of boven de regel 'ON CONFLICT DO NOTHING;' (bij een INSERT)
 -- Je kunt deze eigen query selecteren en los uitvoeren, en wijzigen tot
 -- je tevreden bent.
-
--- Vervolgens kun je je uitwerkingen testen door de testregels
+ -- Vervolgens kun je je uitwerkingen testen door de testregels
 -- (met [TEST] erachter) te activeren (haal hiervoor de commentaartekens
 -- weg) en vervolgens het hele bestand uit te voeren. Hiervoor moet je de
 -- testsuite in de database hebben geladen (bedrijf_postgresql_test.sql).
@@ -26,77 +25,174 @@
 --
 -- Lever je werk pas in op Canvas als alle tests slagen.
 -- ------------------------------------------------------------------------
-
-
--- S5.1.
+ -- S5.1.
 -- Welke medewerkers hebben zowel de Java als de XML cursus
 -- gevolgd? Geef hun personeelsnummers.
--- DROP VIEW IF EXISTS s5_1; CREATE OR REPLACE VIEW s5_1 AS                                                     -- [TEST]
+
+DROP VIEW IF EXISTS s5_1;
+
+CREATE OR REPLACE VIEW s5_1 AS -- [TEST]
+ SELECT cursist
+    FROM inschrijvingen
+    WHERE (cursus = 'JAV' )AND cursist IN (
+	SELECT cursist 
+	FROM inschrijvingen 
+	WHERE (cursus = 'XML'));
+
 
 
 -- S5.2.
 -- Geef de nummers van alle medewerkers die niet aan de afdeling 'OPLEIDINGEN'
 -- zijn verbonden.
--- DROP VIEW IF EXISTS s5_2; CREATE OR REPLACE VIEW s5_2 AS                                                     -- [TEST]
 
+DROP VIEW IF EXISTS s5_2;
+
+
+CREATE OR REPLACE VIEW s5_2 AS -- [TEST]
+
+SELECT m.mnr
+FROM medewerkers m
+WHERE m.afd NOT IN
+        (SELECT anr
+         FROM afdelingen
+         WHERE naam = 'OPLEIDINGEN');
 
 -- S5.3.
 -- Geef de nummers van alle medewerkers die de Java-cursus niet hebben
 -- gevolgd.
--- DROP VIEW IF EXISTS s5_3; CREATE OR REPLACE VIEW s5_3 AS                                                     -- [TEST]
+DROP VIEW IF EXISTS s5_3; CREATE OR REPLACE VIEW s5_3 AS                                                     -- [TEST]
 
-
+SELECT m.mnr
+FROM medewerkers m
+WHERE m.mnr NOT IN
+    (SELECT i.cursist
+    FROM inschrijvingen i 
+    WHERE cursus = 'JAV'); 
+        
+        
+        
 -- S5.4.
 -- a. Welke medewerkers hebben ondergeschikten? Geef hun naam.
--- DROP VIEW IF EXISTS s5_4a; CREATE OR REPLACE VIEW s5_4a AS                                                   -- [TEST]
+DROP VIEW IF EXISTS s5_4a; CREATE OR REPLACE VIEW s5_4a AS                                                   -- [TEST]
 
--- b. En welke medewerkers hebben geen ondergeschikten? Geef wederom de naam.
--- DROP VIEW IF EXISTS s5_4b; CREATE OR REPLACE VIEW s5_4b AS                                                   -- [TEST]
+SELECT m.naam
+FROM medewerkers m
+WHERE m.mnr IN (
+    SELECT m2.chef
+    FROM medewerkers m2
+    WHERE m2.functie != 'DIRECTEUR'
+    );  
+
+-- welke medewerkers hebben geen ondergeschikten? Geef wederom de naam.
+DROP VIEW IF EXISTS s5_4b; CREATE OR REPLACE VIEW s5_4b AS                                                   -- [TEST]
+
+SELECT m.naam
+FROM medewerkers m
+WHERE m.mnr NOT IN (
+    SELECT m2.chef
+    FROM medewerkers m2
+    WHERE m2.functie != 'DIRECTEUR'
+    );  
 
 
--- S5.5.
+ -- S5.5.
 -- Geef cursuscode en begindatum van alle uitvoeringen van programmeercursussen
 -- ('BLD') in 2020.
--- DROP VIEW IF EXISTS s5_5; CREATE OR REPLACE VIEW s5_5 AS                                                     -- [TEST]
+DROP VIEW IF EXISTS s5_5; CREATE OR REPLACE VIEW s5_5 AS                                                     -- [TEST]
+
+SELECT u.cursus, u.begindatum 
+    FROM uitvoeringen u
+    WHERE date_part('year', u.begindatum) = '2020'
+	AND u.cursus IN (
+	SELECT c.code 
+	FROM cursussen c
+	WHERE c.type  = 'BLD' 
+	);
 
 
--- S5.6.
+ -- S5.6.
 -- Geef van alle cursusuitvoeringen: de cursuscode, de begindatum en het
 -- aantal inschrijvingen (`aantal_inschrijvingen`). Sorteer op begindatum.
--- DROP VIEW IF EXISTS s5_6; CREATE OR REPLACE VIEW s5_6 AS                                                     -- [TEST]
+DROP VIEW IF EXISTS s5_6; CREATE OR REPLACE VIEW s5_6 AS                                                     -- [TEST]
+
+SELECT u.cursus, u.begindatum, 
+(SELECT COUNT(*)
+FROM inschrijvingen i
+WHERE i.cursus = u.cursus
+AND i.begindatum = u.begindatum) AS aantal_inschrijvingen
+FROM uitvoeringen u  
+ORDER BY u.begindatum; 
 
 
--- S5.7.
+
+ -- S5.7.
 -- Geef voorletter(s) en achternaam van alle trainers die ooit tijdens een
 -- algemene ('ALG') cursus hun eigen chef als cursist hebben gehad.
--- DROP VIEW IF EXISTS s5_7; CREATE OR REPLACE VIEW s5_7 AS                                                     -- [TEST]
+DROP VIEW IF EXISTS s5_7; CREATE OR REPLACE VIEW s5_7 AS                                                     -- [TEST]
+
+SELECT voorl, naam
+FROM medewerkers m1
+WHERE m1.mnr IN (
+    SELECT u.docent
+    FROM uitvoeringen u
+    WHERE u.cursus IN (
+        SELECT c.code
+        FROM cursussen c
+        WHERE c.type = 'ALG'
+    )
+    AND EXISTS (
+        SELECT 1
+        FROM inschrijvingen i
+        WHERE i.cursus = u.cursus
+          AND i.begindatum = u.begindatum
+          AND i.cursist = (SELECT m2.chef FROM medewerkers m2 WHERE m2.mnr = u.docent)
+    )
+);
 
 
--- S5.8.
+ -- S5.8.
 -- Geef de naam van de medewerkers die nog nooit een cursus hebben gegeven.
--- DROP VIEW IF EXISTS s5_8; CREATE OR REPLACE VIEW s5_8 AS                                                     -- [TEST]
+DROP VIEW IF EXISTS s5_8; CREATE OR REPLACE VIEW s5_8 AS                                                     -- [TEST]
+
+SELECT m.naam 
+FROM medewerkers m
+WHERE m.mnr NOT IN (
+    SELECT u.docent 
+    FROM uitvoeringen u
+	WHERE u.docent IS NOT NULL 
+);
 
 
 
--- -------------------------[ HU TESTRAAMWERK ]--------------------------------
+ -- -------------------------[ HU TESTRAAMWERK ]--------------------------------
 -- Met onderstaande query kun je je code testen. Zie bovenaan dit bestand
 -- voor uitleg.
 
-SELECT * FROM test_select('S5.1') AS resultaat
+    SELECT *
+    FROM test_select('S5.1') AS resultaat
 UNION
-SELECT * FROM test_select('S5.2') AS resultaat
+SELECT *
+FROM test_select('S5.2') AS resultaat
 UNION
-SELECT * FROM test_select('S5.3') AS resultaat
+SELECT *
+FROM test_select('S5.3') AS resultaat
 UNION
-SELECT * FROM test_select('S5.4a') AS resultaat
+SELECT *
+FROM test_select('S5.4a') AS resultaat
 UNION
-SELECT * FROM test_select('S5.4b') AS resultaat
+SELECT *
+FROM test_select('S5.4b') AS resultaat
 UNION
-SELECT * FROM test_select('S5.5') AS resultaat
+SELECT *
+FROM test_select('S5.5') AS resultaat
 UNION
-SELECT * FROM test_select('S5.6') AS resultaat
+SELECT *
+FROM test_select('S5.6') AS resultaat
 UNION
-SELECT * FROM test_select('S5.7') AS resultaat
+SELECT *
+FROM test_select('S5.7') AS resultaat
 UNION
-SELECT * FROM test_select('S5.8') AS resultaat
+SELECT *
+FROM test_select('S5.8') AS resultaat
 ORDER BY resultaat;
+
